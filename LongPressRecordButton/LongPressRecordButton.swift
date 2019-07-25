@@ -100,7 +100,7 @@ import UIKit
     /// Determines if the record button is enabled.
     override open var isEnabled: Bool {
         didSet {
-            let state : UIControlState = isEnabled ? UIControlState() : .disabled
+            let state : UIControl.State = isEnabled ? UIControl.State() : .disabled
             circleLayer.fillColor = circleColorForState(state)?.cgColor
             ringLayer.strokeColor = ringColorForState(state)?.cgColor
         }
@@ -166,7 +166,7 @@ import UIKit
         longPressRecognizer.cancelsTouchesInView = false
         longPressRecognizer.minimumPressDuration = 0.3
         self.addGestureRecognizer(longPressRecognizer)
-        addTarget(self, action: #selector(LongPressRecordButton.handleShortPress(_:)), for: UIControlEvents.touchUpInside)
+        addTarget(self, action: #selector(LongPressRecordButton.handleShortPress(_:)), for: UIControl.Event.touchUpInside)
     }
     
     fileprivate func redraw() {
@@ -242,22 +242,22 @@ import UIKit
         }
     }
     
-    fileprivate func ringColorForState(_ state : UIControlState) -> UIColor? {
+    fileprivate func ringColorForState(_ state : UIControl.State) -> UIColor? {
         switch state {
-        case UIControlState(): return ringColor
-        case UIControlState.highlighted: return ringColor
-        case UIControlState.disabled: return ringColor?.withAlphaComponent(0.5)
-        case UIControlState.selected: return ringColor
+        case UIControl.State(): return ringColor
+        case UIControl.State.highlighted: return ringColor
+        case UIControl.State.disabled: return ringColor?.withAlphaComponent(0.5)
+        case UIControl.State.selected: return ringColor
         default: return nil
         }
     }
     
-    fileprivate func circleColorForState(_ state: UIControlState) -> UIColor? {
+    fileprivate func circleColorForState(_ state: UIControl.State) -> UIColor? {
         switch state {
-        case UIControlState(): return circleColor
-        case UIControlState.highlighted: return circleColor?.darkerColor()
-        case UIControlState.disabled: return circleColor?.withAlphaComponent(0.5)
-        case UIControlState.selected: return circleColor?.darkerColor()
+        case UIControl.State(): return circleColor
+        case UIControl.State.highlighted: return circleColor?.darkerColor()
+        case UIControl.State.disabled: return circleColor?.withAlphaComponent(0.5)
+        case UIControl.State.selected: return circleColor?.darkerColor()
         default: return nil
         }
     }
@@ -282,7 +282,7 @@ private extension NSAttributedString {
 
 private extension Int {
     var radians : CGFloat {
-        return CGFloat(self) * CGFloat(M_PI) / 180.0
+        return CGFloat(self) * CGFloat(Double.pi) / 180.0
     }
 }
 
@@ -322,12 +322,11 @@ private class ToolTip : CAShapeLayer, CAAnimationDelegate {
         self.recordButton = recordButton
         
         let rect = recordButton.bounds
-        let text = NSAttributedString(string: title, attributes: [NSFontAttributeName : font, NSForegroundColorAttributeName : foregroundColor])
-        
+        let text = NSAttributedString(string: title, attributes: [NSAttributedString.Key.font : font, NSAttributedString.Key.foregroundColor : foregroundColor]) 
         // TextLayer
         textLayer = CATextLayer()
         textLayer.string = text
-        textLayer.alignmentMode = kCAAlignmentCenter
+        textLayer.alignmentMode = CATextLayerAlignmentMode.center
         textLayer.contentsScale = UIScreen.main.scale
         
         // ShapeLayer
@@ -377,7 +376,7 @@ private class ToolTip : CAShapeLayer, CAAnimationDelegate {
         let animation = CASpringAnimation(keyPath: "transform")
         animation.damping = 15
         animation.initialVelocity = 10
-        animation.fillMode = kCAFillModeForwards
+        animation.fillMode = CAMediaTimingFillMode.forwards
         animation.isRemovedOnCompletion = false
         animation.fromValue = NSValue(caTransform3D: fromTransform)
         animation.toValue = NSValue(caTransform3D: toTransform)
@@ -396,4 +395,15 @@ private class ToolTip : CAShapeLayer, CAAnimationDelegate {
     func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
         removeFromSuperlayer()
     }
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertToOptionalNSAttributedStringKeyDictionary(_ input: [String: Any]?) -> [NSAttributedString.Key: Any]? {
+	guard let input = input else { return nil }
+	return Dictionary(uniqueKeysWithValues: input.map { key, value in (NSAttributedString.Key(rawValue: key), value)})
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromNSAttributedStringKey(_ input: NSAttributedString.Key) -> String {
+	return input.rawValue
 }
